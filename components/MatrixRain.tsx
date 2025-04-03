@@ -42,7 +42,7 @@ const MatrixRain = () => {
     const speeds: number[] = [];
 
     // Initialize drops with fewer columns on mobile
-    const columnCount = isMobile ? Math.floor(columns * 0.7) : columns; // Increased from 0.6 to 0.7
+    const columnCount = isMobile ? Math.floor(columns * 0.5) : columns; // Reduced from 0.7 to 0.5 for better performance
 
     // Calculate column spacing to distribute evenly across the screen
     const columnSpacing = canvas.width / columnCount;
@@ -78,27 +78,41 @@ const MatrixRain = () => {
         const y = drops[i] * fontSize;
 
         if (brightChars[i]) {
-          // Optimized bright character rendering for both mobile and desktop
-          // White core
-          ctx.fillStyle = "#fff";
-          ctx.fillText(char, x, y);
+          if (isMobile) {
+            // Simplified bright character rendering for mobile
+            ctx.fillStyle = "#fff";
+            ctx.fillText(char, x, y);
+            ctx.fillStyle = "#afa";
+            ctx.fillText(char, x, y);
+          } else {
+            // Full effect for desktop
+            // White core
+            ctx.fillStyle = "#fff";
+            ctx.fillText(char, x, y);
 
-          // Green overlay with slight offset for glow effect
-          ctx.fillStyle = "#afa";
-          ctx.fillText(char, x, y);
+            // Green overlay with slight offset for glow effect
+            ctx.fillStyle = "#afa";
+            ctx.fillText(char, x, y);
 
-          // Additional glow effect
-          ctx.fillStyle = "rgba(170, 255, 170, 0.4)";
-          ctx.fillText(char, x, y);
+            // Additional glow effect
+            ctx.fillStyle = "rgba(170, 255, 170, 0.4)";
+            ctx.fillText(char, x, y);
+          }
         } else {
-          // Optimized normal character rendering for both mobile and desktop
-          const gradient = ctx.createLinearGradient(x, y - fontSize, x, y);
-          gradient.addColorStop(0, "rgba(0, 255, 0, 0.2)");
-          gradient.addColorStop(0.5, "rgba(0, 255, 0, 0.7)");
-          gradient.addColorStop(1, "rgba(0, 255, 0, 1.0)");
+          if (isMobile) {
+            // Simplified normal character rendering for mobile
+            ctx.fillStyle = "rgba(0, 255, 0, 0.8)";
+            ctx.fillText(char, x, y);
+          } else {
+            // Full effect for desktop
+            const gradient = ctx.createLinearGradient(x, y - fontSize, x, y);
+            gradient.addColorStop(0, "rgba(0, 255, 0, 0.2)");
+            gradient.addColorStop(0.5, "rgba(0, 255, 0, 0.7)");
+            gradient.addColorStop(1, "rgba(0, 255, 0, 1.0)");
 
-          ctx.fillStyle = gradient;
-          ctx.fillText(char, x, y);
+            ctx.fillStyle = gradient;
+            ctx.fillText(char, x, y);
+          }
         }
 
         if (drops[i] * fontSize > canvas.height) {
@@ -111,8 +125,8 @@ const MatrixRain = () => {
       }
     };
 
-    // Slightly reduced frame rate on mobile
-    const interval = setInterval(draw, isMobile ? 40 : 30);
+    // Significantly reduced frame rate on mobile for better performance
+    const interval = setInterval(draw, isMobile ? 60 : 30);
 
     return () => {
       clearInterval(interval);
