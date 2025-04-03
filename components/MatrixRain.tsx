@@ -13,9 +13,24 @@ const MatrixRain = () => {
     // Better mobile detection using screen width and touch capability
     const isMobile = window.innerWidth <= 768 || "ontouchstart" in window;
 
+    // Performance tracking variables
+    let lastFrameTime = 0;
+    let frameTimes: number[] = [];
+    let isLowPerformanceMode = isMobile; // Start with low performance on mobile
+    let animationFrameId: number;
+
+    // Visibility tracking
+    let isPageVisible = true;
+    document.addEventListener("visibilitychange", () => {
+      isPageVisible = document.visibilityState === "visible";
+    });
+
     // Set canvas size to window size
     const resizeCanvas = () => {
-      const dpr = window.devicePixelRatio || 1;
+      // Limit DPR on mobile devices for better performance
+      const dpr = isMobile
+        ? Math.min(window.devicePixelRatio, 1.5)
+        : window.devicePixelRatio || 1;
       canvas.width = window.innerWidth * dpr;
       canvas.height = window.innerHeight * dpr;
       canvas.style.width = `${window.innerWidth}px`;
@@ -42,7 +57,7 @@ const MatrixRain = () => {
     const speeds: number[] = [];
 
     // Initialize drops with fewer columns on mobile
-    const columnCount = isMobile ? Math.floor(columns * 0.5) : columns; // Reduced from 0.7 to 0.5 for better performance
+    const columnCount = isMobile ? Math.floor(columns * 0.7) : columns; // Keep higher density
 
     // Calculate column spacing to distribute evenly across the screen
     const columnSpacing = canvas.width / columnCount;
@@ -53,17 +68,26 @@ const MatrixRain = () => {
       speeds[i] = Math.random() * 0.5 + 0.7; // Same speed range
     }
 
-    // Load the Matrix font
-    const matrixFont = new FontFace("MatrixCode", "url(/Matrix-Code.ttf)");
-    matrixFont.load().then((font) => {
-      document.fonts.add(font);
-    });
+    // Load the Matrix font only on desktop
+    if (!isMobile) {
+      const matrixFont = new FontFace("MatrixCode", "url(/Matrix-Code.ttf)");
+      matrixFont.load().then((font) => {
+        document.fonts.add(font);
+      });
+    }
 
     const draw = () => {
-      ctx.fillStyle = "rgba(0, 0, 0, 0.05)"; // Same fade effect
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // For mobile, use a more efficient clear method
+      if (isMobile) {
+        ctx.fillStyle = "rgba(0, 0, 0, 0.3)"; // Higher opacity = less redrawing
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      } else {
+        ctx.fillStyle = "rgba(0, 0, 0, 0.05)"; // Same fade effect
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
 
-      ctx.font = `${fontSize}px MatrixCode`;
+      // Use system font on mobile for better performance
+      ctx.font = `${fontSize}px ${isMobile ? "monospace" : "MatrixCode"}`;
 
       for (let i = 0; i < drops.length; i++) {
         if (Math.random() < 0.001) {
@@ -125,12 +149,51 @@ const MatrixRain = () => {
       }
     };
 
-    // Significantly reduced frame rate on mobile for better performance
-    const interval = setInterval(draw, isMobile ? 60 : 30);
+    // Use requestAnimationFrame instead of setInterval for better performance
+    const animate = (timestamp: number) => {
+      // Measure frame time
+      if (lastFrameTime) {
+        const frameTime = timestamp - lastFrameTime;
+        frameTimes.push(frameTime);
+
+        // Check performance every 30 frames
+        if (frameTimes.length > 30) {
+          const avgFrameTime =
+            frameTimes.reduce((a, b) => a + b, 0) / frameTimes.length;
+
+          // If performance is poor, reduce quality further
+          if (avgFrameTime > 33 && !isLowPerformanceMode) {
+            isLowPerformanceMode = true;
+            // Reduce columns by half
+            for (let i = drops.length - 1; i >= 0; i -= 2) {
+              drops.splice(i, 1);
+              brightChars.splice(i, 1);
+              speeds.splice(i, 1);
+            }
+          }
+
+          frameTimes = [];
+        }
+      }
+      lastFrameTime = timestamp;
+
+      // Only draw if page is visible
+      if (isPageVisible) {
+        draw();
+      }
+
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    // Start animation
+    animationFrameId = requestAnimationFrame(animate);
 
     return () => {
-      clearInterval(interval);
+      cancelAnimationFrame(animationFrameId);
       window.removeEventListener("resize", resizeCanvas);
+      document.removeEventListener("visibilitychange", () => {
+        isPageVisible = document.visibilityState === "visible";
+      });
     };
   }, []);
 
