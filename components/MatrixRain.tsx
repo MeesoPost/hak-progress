@@ -43,6 +43,10 @@ const MatrixRain = () => {
 
     // Initialize drops with fewer columns on mobile
     const columnCount = isMobile ? Math.floor(columns * 0.7) : columns; // Increased from 0.6 to 0.7
+
+    // Calculate column spacing to distribute evenly across the screen
+    const columnSpacing = canvas.width / columnCount;
+
     for (let i = 0; i < columnCount; i++) {
       drops[i] = -Math.floor((Math.random() * canvas.height) / fontSize) - 1;
       brightChars[i] = Math.random() < 0.1; // Same bright character probability
@@ -68,7 +72,9 @@ const MatrixRain = () => {
         }
 
         const char = charArray[Math.floor(Math.random() * charArray.length)];
-        const x = i * fontSize - fontSize / 2;
+
+        // Calculate x position to distribute columns evenly across the screen
+        const x = i * columnSpacing + columnSpacing / 2;
         const y = drops[i] * fontSize;
 
         if (brightChars[i]) {
