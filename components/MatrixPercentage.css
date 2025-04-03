@@ -1,0 +1,147 @@
+.matrix-percentage {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  font-family: "Orbitron", "Rajdhani", sans-serif;
+}
+
+.percentage-container {
+  position: relative;
+  text-align: center;
+  padding: 3.5rem 4rem;
+  background: rgba(0, 12, 0, 0.85);
+  border: 1px solid rgba(0, 255, 0, 0.2);
+  box-shadow: 0 0 30px rgba(0, 255, 0, 0.1);
+  min-width: 350px;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  animation: fadeIn 0.8s ease-out forwards;
+}
+
+/* Subtle scanlines effect */
+.percentage-container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    rgba(0, 15, 0, 0.05) 50%,
+    rgba(0, 20, 0, 0.1) 50%
+  );
+  background-size: 100% 4px;
+  pointer-events: none;
+  animation: scanlines 1s linear infinite;
+}
+
+/* Terminal header */
+.percentage-container::after {
+  content: "SYSTEM//MATRIX//HAK.exe";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 30px;
+  background: rgba(0, 20, 0, 0.4);
+  border-bottom: 1px solid rgba(0, 255, 0, 0.2);
+  color: rgba(0, 255, 0, 0.8);
+  font-family: "Rajdhani", monospace;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  padding: 0 15px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 500;
+}
+
+.title {
+  font-size: 3rem;
+  color: #fff;
+  text-shadow: 0 0 15px rgba(0, 255, 0, 0.6);
+  margin-top: 1.5rem;
+  margin-bottom: 2rem;
+  font-weight: 600;
+  letter-spacing: 3px;
+  font-family: "Orbitron", sans-serif;
+  position: relative;
+  opacity: 0;
+  animation: fadeIn 0.5s ease-out 0.3s forwards;
+}
+
+.percentage {
+  font-size: 5rem;
+  color: #fff;
+  text-shadow: 0 0 20px rgba(0, 255, 0, 0.7);
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+  font-family: "Rajdhani", sans-serif;
+  position: relative;
+  opacity: 0;
+  animation: fadeIn 0.5s ease-out 0.5s forwards;
+}
+
+.loading-text {
+  font-size: 1.6rem;
+  color: rgba(0, 255, 0, 0.9);
+  text-shadow: 0 0 10px rgba(0, 255, 0, 0.4);
+  letter-spacing: 2px;
+  animation: pulse 2s infinite;
+  font-weight: 500;
+  font-family: "Orbitron", sans-serif;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scanlines {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(4px);
+  }
+}
+
+@keyframes glitch {
+  0%,
+  90%,
+  100% {
+    transform: none;
+    opacity: 1;
+  }
+  92% {
+    transform: skew(1deg, 0deg);
+    opacity: 0.75;
+  }
+  94% {
+    transform: skew(-1deg, 0deg);
+    opacity: 0.85;
+  }
+  96% {
+    transform: none;
+    opacity: 0.9;
+  }
+}
