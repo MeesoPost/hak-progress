@@ -19,23 +19,21 @@
   animation: fadeIn 0.8s ease-out forwards;
 }
 
-/* Subtle scanlines effect - disabled on mobile */
-@media (min-width: 768px) {
-  .percentage-container::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(
-      rgba(0, 15, 0, 0.05) 50%,
-      rgba(0, 20, 0, 0.1) 50%
-    );
-    background-size: 100% 4px;
-    pointer-events: none;
-    animation: scanlines 1s linear infinite;
-  }
+/* Subtle scanlines effect - optimized for both mobile and desktop */
+.percentage-container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    rgba(0, 15, 0, 0.05) 50%,
+    rgba(0, 20, 0, 0.1) 50%
+  );
+  background-size: 100% 4px;
+  pointer-events: none;
+  animation: scanlines 1s linear infinite;
 }
 
 /* Terminal header */
@@ -127,7 +125,7 @@
   }
 }
 
-/* Mobile optimizations */
+/* Mobile optimizations - keeping more effects */
 @media (max-width: 767px) {
   .percentage-container {
     padding: 2rem;
@@ -149,15 +147,15 @@
     font-size: 1.2rem;
   }
 
-  /* Disable some animations on mobile */
+  /* Keep animations but optimize them */
   .percentage-container::before {
-    display: none;
+    animation: scanlines 1.5s linear infinite; /* Slower animation */
   }
 
-  /* Reduce animation complexity */
+  /* Keep the same animations but with slightly reduced complexity */
   .title,
   .percentage {
-    animation: simpleFadeIn 0.5s ease-out forwards;
+    animation: fadeIn 0.5s ease-out forwards;
   }
 }
 

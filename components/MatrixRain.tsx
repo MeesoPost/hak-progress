@@ -10,8 +10,8 @@ const MatrixRain = () => {
     const ctx = canvas.getContext("2d", { alpha: false });
     if (!ctx) return;
 
-    // Check if device is mobile
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    // Better mobile detection using screen width and touch capability
+    const isMobile = window.innerWidth <= 768 || "ontouchstart" in window;
 
     // Set canvas size to window size
     const resizeCanvas = () => {
@@ -29,9 +29,11 @@ const MatrixRain = () => {
     resizeCanvas();
     window.addEventListener("resize", resizeCanvas);
 
-    // Matrix characters (reduced set for better performance)
-    const chars = "ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ";
+    // Matrix characters - full set for both mobile and desktop
+    const chars =
+      "ｦｧｨｩｪｫｬｭｮｯｰｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ1234567890*+-<>:;=[]|";
     const charArray = chars.split("");
+
     const fontSize = isMobile ? 16 : 20; // Smaller font size on mobile
     const columns =
       Math.ceil(canvas.width / (fontSize * (window.devicePixelRatio || 1))) + 1;
@@ -40,11 +42,11 @@ const MatrixRain = () => {
     const speeds: number[] = [];
 
     // Initialize drops with fewer columns on mobile
-    const columnCount = isMobile ? Math.floor(columns * 0.6) : columns;
+    const columnCount = isMobile ? Math.floor(columns * 0.7) : columns; // Increased from 0.6 to 0.7
     for (let i = 0; i < columnCount; i++) {
       drops[i] = -Math.floor((Math.random() * canvas.height) / fontSize) - 1;
-      brightChars[i] = Math.random() < 0.05; // Reduced bright characters
-      speeds[i] = Math.random() * 0.3 + 0.5; // Slower speeds
+      brightChars[i] = Math.random() < 0.1; // Same bright character probability
+      speeds[i] = Math.random() * 0.5 + 0.7; // Same speed range
     }
 
     // Load the Matrix font
@@ -54,14 +56,14 @@ const MatrixRain = () => {
     });
 
     const draw = () => {
-      ctx.fillStyle = "rgba(0, 0, 0, 0.1)"; // Increased opacity for better fade
+      ctx.fillStyle = "rgba(0, 0, 0, 0.05)"; // Same fade effect
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       ctx.font = `${fontSize}px MatrixCode`;
 
       for (let i = 0; i < drops.length; i++) {
-        if (Math.random() < 0.002) {
-          // Reduced frequency of bright changes
+        if (Math.random() < 0.001) {
+          // Same frequency of bright changes
           brightChars[i] = !brightChars[i];
         }
 
@@ -70,29 +72,41 @@ const MatrixRain = () => {
         const y = drops[i] * fontSize;
 
         if (brightChars[i]) {
-          // Simplified bright character rendering
+          // Optimized bright character rendering for both mobile and desktop
+          // White core
           ctx.fillStyle = "#fff";
           ctx.fillText(char, x, y);
+
+          // Green overlay with slight offset for glow effect
           ctx.fillStyle = "#afa";
           ctx.fillText(char, x, y);
+
+          // Additional glow effect
+          ctx.fillStyle = "rgba(170, 255, 170, 0.4)";
+          ctx.fillText(char, x, y);
         } else {
-          // Simplified normal character rendering
-          ctx.fillStyle = "rgba(0, 255, 0, 0.8)";
+          // Optimized normal character rendering for both mobile and desktop
+          const gradient = ctx.createLinearGradient(x, y - fontSize, x, y);
+          gradient.addColorStop(0, "rgba(0, 255, 0, 0.2)");
+          gradient.addColorStop(0.5, "rgba(0, 255, 0, 0.7)");
+          gradient.addColorStop(1, "rgba(0, 255, 0, 1.0)");
+
+          ctx.fillStyle = gradient;
           ctx.fillText(char, x, y);
         }
 
         if (drops[i] * fontSize > canvas.height) {
           drops[i] = -1;
-          brightChars[i] = Math.random() < 0.05;
-          speeds[i] = Math.random() * 0.3 + 0.5;
+          brightChars[i] = Math.random() < 0.1;
+          speeds[i] = Math.random() * 0.5 + 0.7;
         }
 
         drops[i] += speeds[i];
       }
     };
 
-    // Reduced frame rate on mobile
-    const interval = setInterval(draw, isMobile ? 50 : 30);
+    // Slightly reduced frame rate on mobile
+    const interval = setInterval(draw, isMobile ? 40 : 30);
 
     return () => {
       clearInterval(interval);
