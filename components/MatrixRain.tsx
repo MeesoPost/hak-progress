@@ -49,7 +49,8 @@ const MatrixRain = () => {
       "ｦｧｨｩｪｫｬｭｮｯｰｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ1234567890*+-<>:;=[]|";
     const charArray = chars.split("");
 
-    const fontSize = isMobile ? 16 : 20; // Smaller font size on mobile
+    // Increase font size on mobile for better visibility
+    const fontSize = isMobile ? 24 : 20; // Larger font size on mobile (was 16)
     const columns =
       Math.ceil(canvas.width / (fontSize * (window.devicePixelRatio || 1))) + 1;
     const drops: number[] = [];
