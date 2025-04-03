@@ -10,19 +10,17 @@ const MatrixRain = () => {
     const ctx = canvas.getContext("2d", { alpha: false });
     if (!ctx) return;
 
+    // Check if device is mobile
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
     // Set canvas size to window size
     const resizeCanvas = () => {
-      // Get device pixel ratio for sharper text on high DPI displays
       const dpr = window.devicePixelRatio || 1;
       canvas.width = window.innerWidth * dpr;
       canvas.height = window.innerHeight * dpr;
       canvas.style.width = `${window.innerWidth}px`;
       canvas.style.height = `${window.innerHeight}px`;
-
-      // Scale context according to device pixel ratio
       ctx.scale(dpr, dpr);
-
-      // Set text rendering options for sharper text
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.imageSmoothingEnabled = true;
@@ -31,22 +29,22 @@ const MatrixRain = () => {
     resizeCanvas();
     window.addEventListener("resize", resizeCanvas);
 
-    // Matrix characters (using a mix of katakana and symbols)
-    const chars =
-      "ｦｧｨｩｪｫｬｭｮｯｰｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ1234567890*+-<>:;=[]|";
+    // Matrix characters (reduced set for better performance)
+    const chars = "ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ";
     const charArray = chars.split("");
-    const fontSize = 20; // Slightly smaller font size for cleaner look
+    const fontSize = isMobile ? 16 : 20; // Smaller font size on mobile
     const columns =
       Math.ceil(canvas.width / (fontSize * (window.devicePixelRatio || 1))) + 1;
     const drops: number[] = [];
     const brightChars: boolean[] = [];
     const speeds: number[] = [];
 
-    // Initialize drops starting from above the screen
-    for (let i = 0; i < columns; i++) {
-      drops[i] = -Math.floor((Math.random() * canvas.height) / fontSize) - 1; // Start above screen
-      brightChars[i] = Math.random() < 0.1;
-      speeds[i] = Math.random() * 0.5 + 0.7;
+    // Initialize drops with fewer columns on mobile
+    const columnCount = isMobile ? Math.floor(columns * 0.6) : columns;
+    for (let i = 0; i < columnCount; i++) {
+      drops[i] = -Math.floor((Math.random() * canvas.height) / fontSize) - 1;
+      brightChars[i] = Math.random() < 0.05; // Reduced bright characters
+      speeds[i] = Math.random() * 0.3 + 0.5; // Slower speeds
     }
 
     // Load the Matrix font
@@ -56,72 +54,46 @@ const MatrixRain = () => {
     });
 
     const draw = () => {
-      // Semi-transparent black background to create fade effect
-      ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+      ctx.fillStyle = "rgba(0, 0, 0, 0.1)"; // Increased opacity for better fade
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Set base font with normal weight for cleaner look
       ctx.font = `${fontSize}px MatrixCode`;
 
-      // Draw characters
       for (let i = 0; i < drops.length; i++) {
-        if (Math.random() < 0.001) {
+        if (Math.random() < 0.002) {
+          // Reduced frequency of bright changes
           brightChars[i] = !brightChars[i];
         }
 
         const char = charArray[Math.floor(Math.random() * charArray.length)];
-        const x = i * fontSize - fontSize / 2; // Offset to cover screen edges
+        const x = i * fontSize - fontSize / 2;
         const y = drops[i] * fontSize;
 
-        // Create varying brightness effects
         if (brightChars[i]) {
-          // Multiple passes for bright characters
-          const offsets = [-0.5, 0, 0.5];
-          offsets.forEach((offset) => {
-            // White core
-            ctx.fillStyle = "#fff";
-            ctx.fillText(char, x + offset, y);
-            ctx.fillText(char, x, y + offset);
-
-            // Green overlay
-            ctx.fillStyle = "#afa";
-            ctx.fillText(char, x + offset, y);
-            ctx.fillText(char, x, y + offset);
-          });
-
-          // Glow effect
-          ctx.fillStyle = "rgba(170, 255, 170, 0.4)";
+          // Simplified bright character rendering
+          ctx.fillStyle = "#fff";
+          ctx.fillText(char, x, y);
+          ctx.fillStyle = "#afa";
           ctx.fillText(char, x, y);
         } else {
-          // Multiple passes for normal characters
-          const gradient = ctx.createLinearGradient(x, y - fontSize, x, y);
-          gradient.addColorStop(0, "rgba(0, 255, 0, 0.2)");
-          gradient.addColorStop(0.5, "rgba(0, 255, 0, 0.7)");
-          gradient.addColorStop(1, "rgba(0, 255, 0, 1.0)");
-
-          const offsets = [-0.3, 0, 0.3];
-          offsets.forEach((offset) => {
-            ctx.fillStyle = gradient;
-            ctx.fillText(char, x + offset, y);
-            ctx.fillText(char, x, y + offset);
-          });
+          // Simplified normal character rendering
+          ctx.fillStyle = "rgba(0, 255, 0, 0.8)";
+          ctx.fillText(char, x, y);
         }
 
-        // Reset drop to top when it reaches bottom
         if (drops[i] * fontSize > canvas.height) {
-          drops[i] = -1; // Reset to just above screen
-          brightChars[i] = Math.random() < 0.1;
-          speeds[i] = Math.random() * 0.5 + 0.7;
+          drops[i] = -1;
+          brightChars[i] = Math.random() < 0.05;
+          speeds[i] = Math.random() * 0.3 + 0.5;
         }
 
         drops[i] += speeds[i];
       }
     };
 
-    // Animation loop with higher frame rate
-    const interval = setInterval(draw, 30);
+    // Reduced frame rate on mobile
+    const interval = setInterval(draw, isMobile ? 50 : 30);
 
-    // Cleanup
     return () => {
       clearInterval(interval);
       window.removeEventListener("resize", resizeCanvas);
