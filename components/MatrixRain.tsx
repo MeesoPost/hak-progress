@@ -65,7 +65,10 @@ const MatrixRain = () => {
     for (let i = 0; i < columnCount; i++) {
       drops[i] = -Math.floor((Math.random() * canvas.height) / fontSize) - 1;
       brightChars[i] = Math.random() < 0.1; // Same bright character probability
-      speeds[i] = Math.random() * 0.5 + 0.7; // Same speed range
+      // Slower speeds on mobile for better trailing effect
+      speeds[i] = isMobile
+        ? Math.random() * 0.3 + 0.3
+        : Math.random() * 0.5 + 0.7;
     }
 
     // Load the Matrix font only on desktop
@@ -77,9 +80,9 @@ const MatrixRain = () => {
     }
 
     const draw = () => {
-      // For mobile, use a more efficient clear method
+      // For mobile, use a more efficient clear method with lower opacity for better trailing effect
       if (isMobile) {
-        ctx.fillStyle = "rgba(0, 0, 0, 0.3)"; // Higher opacity = less redrawing
+        ctx.fillStyle = "rgba(0, 0, 0, 0.15)"; // Lower opacity = more trailing effect
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       } else {
         ctx.fillStyle = "rgba(0, 0, 0, 0.05)"; // Same fade effect
@@ -142,7 +145,10 @@ const MatrixRain = () => {
         if (drops[i] * fontSize > canvas.height) {
           drops[i] = -1;
           brightChars[i] = Math.random() < 0.1;
-          speeds[i] = Math.random() * 0.5 + 0.7;
+          // Slower speeds on mobile for better trailing effect
+          speeds[i] = isMobile
+            ? Math.random() * 0.3 + 0.3
+            : Math.random() * 0.5 + 0.7;
         }
 
         drops[i] += speeds[i];
@@ -182,7 +188,14 @@ const MatrixRain = () => {
         draw();
       }
 
-      animationFrameId = requestAnimationFrame(animate);
+      // Add a frame rate limiter for mobile to slow down the animation
+      if (isMobile) {
+        setTimeout(() => {
+          animationFrameId = requestAnimationFrame(animate);
+        }, 50); // 50ms delay = ~20fps on mobile
+      } else {
+        animationFrameId = requestAnimationFrame(animate);
+      }
     };
 
     // Start animation
